@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - ‘wc.info’ - /home/hyz/code/wc/wc.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">home/hyz/code/wc</a> - wc.cpp<span style="font-size: 80%;"> (source / <a href="wc.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">‘wc.info’</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">97</td>
+            <td class="headerCovTableEntry">106</td>
+            <td class="headerCovTableEntryHi">91.5 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-09-11 23:30:31</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #include &lt;sys/types.h&gt;</a>
+<span class="lineNum">       2 </span>            : #include &lt;sys/stat.h&gt;
+<span class="lineNum">       3 </span>            : #include &lt;dirent.h&gt;
+<span class="lineNum">       4 </span>            : #include &lt;iostream&gt;
+<span class="lineNum">       5 </span>            : #include &lt;fstream&gt;
+<span class="lineNum">       6 </span>            : #include &lt;cstddef&gt;
+<span class="lineNum">       7 </span>            : #include &lt;string&gt;
+<span class="lineNum">       8 </span>            : #include &lt;cstdio&gt;
+<span class="lineNum">       9 </span>            : #include &lt;regex&gt;
+<span class="lineNum">      10 </span>            : #include &lt;map&gt;
+<span class="lineNum">      11 </span>            : using namespace std;
+<span class="lineNum">      12 </span>            : 
+<span class="lineNum">      13 </span>            : class File {
+<span class="lineNum">      14 </span>            :         private:
+<span class="lineNum">      15 </span>            :                 FILE *pFile;
+<span class="lineNum">      16 </span>            :                 string fileName;
+<span class="lineNum">      17 </span>            :                 int characters, words, lines, blankLines, codeLines, commentLines;
+<span class="lineNum">      18 </span>            : 
+<a name="19"><span class="lineNum">      19 </span>            :         public:</a>
+<span class="lineNum">      20 </span>            :                 // 构造函数，设置各初始值为0
+<span class="lineNum">      21 </span><span class="lineCov">         12 :                 File(char *s) {</span>
+<span class="lineNum">      22 </span><span class="lineCov">         12 :                         this-&gt;pFile = fopen(s, &quot;r&quot;);</span>
+<span class="lineNum">      23 </span><span class="lineCov">         12 :                         this-&gt;fileName = s;</span>
+<span class="lineNum">      24 </span><span class="lineCov">         12 :                         characters = 0;</span>
+<span class="lineNum">      25 </span><span class="lineCov">         12 :                         words = 0;</span>
+<span class="lineNum">      26 </span><span class="lineCov">         12 :                         lines = 0;</span>
+<span class="lineNum">      27 </span><span class="lineCov">         12 :                         blankLines = 0;</span>
+<span class="lineNum">      28 </span><span class="lineCov">         12 :                         codeLines = 0;</span>
+<span class="lineNum">      29 </span><span class="lineCov">         12 :                         commentLines = 0;</span>
+<span class="lineNum">      30 </span><span class="lineCov">         12 :                 }</span>
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            :                 /* 假如需要统计字符数或词数或行数，调用countBasic函数
+<a name="33"><span class="lineNum">      33 </span>            :                  * 假如需要统计空白行、代码行和注释行，调用countBasic函数</a>
+<span class="lineNum">      34 </span>            :                  */
+<span class="lineNum">      35 </span><span class="lineCov">         12 :                 void count(map&lt;char, bool&gt; mode) {</span>
+<span class="lineNum">      36 </span><span class="lineCov">         12 :                         if(mode['c'] || mode['w'] || mode['l'])</span>
+<span class="lineNum">      37 </span><span class="lineCov">         12 :                                 countBasic(pFile);</span>
+<span class="lineNum">      38 </span><span class="lineCov">         12 :                         if(mode['a'])</span>
+<span class="lineNum">      39 </span><span class="lineCov">         12 :                                 countSpecialLines();</span>
+<span class="lineNum">      40 </span><span class="lineCov">         12 :                 }</span>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<span class="lineNum">      42 </span>            :                 // 统计字符、词、行
+<span class="lineNum">      43 </span><span class="lineCov">         12 :                 void countBasic(FILE *pFile) {</span>
+<span class="lineNum">      44 </span>            :                         char c;
+<span class="lineNum">      45 </span><span class="lineCov">         12 :                         bool spaceFlag = true;</span>
+<span class="lineNum">      46 </span><span class="lineCov">       1360 :                         while((c = fgetc(pFile)) != EOF) {</span>
+<span class="lineNum">      47 </span><span class="lineCov">        674 :                                 characters++;</span>
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span><span class="lineCov">        674 :                                 words += (spaceFlag == true &amp;&amp; isgraph(c));</span>
+<span class="lineNum">      50 </span><span class="lineCov">        674 :                                 spaceFlag = isspace(c);</span>
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span><span class="lineCov">        674 :                                 lines += c == '\n';</span>
+<span class="lineNum">      53 </span>            :                         }
+<span class="lineNum">      54 </span><span class="lineCov">         12 :                 }</span>
+<span class="lineNum">      55 </span>            : 
+<span class="lineNum">      56 </span>            :                 /* 统计空白行、代码行、注释行
+<span class="lineNum">      57 </span>            :                  * 要确定一行是不是空白行，只要通过判断该行的可打印字符个数是否不超过1个即可。另外还要注意，该行不能在块注释中。
+<span class="lineNum">      58 </span>            :                  * 要确定一行是不是代码行，只要判断该行的可打印字符个数是否超过1个即可。另外还要注意，改行不在块注释中。
+<span class="lineNum">      59 </span>            :                  * 假如一行是注释行，那么该行首先必须不是代码行，其次，需要有注释标志。
+<a name="60"><span class="lineNum">      60 </span>            :                  * 根据以上信息，可写出正则表达式进行匹配。</a>
+<span class="lineNum">      61 </span>            :                  */
+<span class="lineNum">      62 </span><span class="lineCov">         12 :                 void countSpecialLines() {</span>
+<span class="lineNum">      63 </span><span class="lineCov">         24 :                         string line;</span>
+<span class="lineNum">      64 </span><span class="lineCov">         24 :                         ifstream file(fileName);</span>
+<span class="lineNum">      65 </span><span class="lineCov">         12 :                         bool blockCommentFlag = false;</span>
+<span class="lineNum">      66 </span><span class="lineCov">         24 :                         string blankLineRegex = &quot;(\\s*)([{};]?)(\\s*)&quot;;</span>
+<span class="lineNum">      67 </span><span class="lineCov">         24 :                         string lineCommentRegex = &quot;(\\s*)([{};]?)(\\s*)(//)(.*)&quot;;</span>
+<span class="lineNum">      68 </span><span class="lineCov">         24 :                         string blockCommentStartFlagRegex = &quot;(\\s*)([{};]?)(\\s*)(/{1})(\\*{1})(.*)&quot;;</span>
+<span class="lineNum">      69 </span><span class="lineCov">         24 :                         string blockCommentStartFlag1Regex = &quot;(.*)(/{1})(\\*{1})(.*)&quot;;</span>
+<span class="lineNum">      70 </span><span class="lineCov">         24 :                         string blockCommentCloseFlagRegex = &quot;(.*)(\\*{1})(/{1})(\\s*)&quot;;</span>
+<span class="lineNum">      71 </span><span class="lineCov">        108 :                         while (getline(file, line)) {</span>
+<span class="lineNum">      72 </span><span class="lineCov">         48 :                                 if(blockCommentFlag) {</span>
+<span class="lineNum">      73 </span><span class="lineCov">          4 :                                         commentLines++;</span>
+<span class="lineNum">      74 </span><span class="lineCov">          4 :                                         if(regex_match(line, regex(blockCommentCloseFlagRegex))) {</span>
+<span class="lineNum">      75 </span><span class="lineCov">          2 :                                                 blockCommentFlag = false;</span>
+<span class="lineNum">      76 </span>            :                                         }
+<span class="lineNum">      77 </span>            :                                 }
+<span class="lineNum">      78 </span><span class="lineCov">         44 :                                 else if(regex_match(line, regex(blankLineRegex))) {</span>
+<span class="lineNum">      79 </span><span class="lineCov">         12 :                                         blankLines++;</span>
+<span class="lineNum">      80 </span>            :                                 }
+<span class="lineNum">      81 </span><span class="lineCov">         32 :                                 else if(regex_match(line, regex(lineCommentRegex))) {</span>
+<span class="lineNum">      82 </span><span class="lineCov">          4 :                                         commentLines++;</span>
+<span class="lineNum">      83 </span>            :                                 }
+<span class="lineNum">      84 </span><span class="lineCov">         28 :                                 else if(regex_match(line, regex(blockCommentStartFlagRegex))) {</span>
+<span class="lineNum">      85 </span><span class="lineCov">          2 :                                         commentLines++;</span>
+<span class="lineNum">      86 </span><span class="lineCov">          2 :                                         blockCommentFlag = true;</span>
+<span class="lineNum">      87 </span>            :                                 }
+<span class="lineNum">      88 </span><span class="lineCov">         26 :                                 else if(regex_match(line, regex(blockCommentStartFlag1Regex))) {</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :                                         codeLines++;</span>
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :                                         blockCommentFlag = true;</span>
+<span class="lineNum">      91 </span>            :                                 }
+<span class="lineNum">      92 </span>            :                                 else {
+<span class="lineNum">      93 </span><span class="lineCov">         26 :                                         codeLines++;</span>
+<span class="lineNum">      94 </span>            :                                 }
+<span class="lineNum">      95 </span>            :                         }
+<span class="lineNum">      96 </span><span class="lineCov">         12 :                         file.close();</span>
+<span class="lineNum">      97 </span><span class="lineCov">         12 :                 }</span>
+<a name="98"><span class="lineNum">      98 </span>            : </a>
+<span class="lineNum">      99 </span>            :                 // 输出
+<span class="lineNum">     100 </span><span class="lineCov">         12 :                 void print(map&lt;char, bool&gt; mode) {</span>
+<span class="lineNum">     101 </span><span class="lineCov">         12 :                         if(mode['c'])</span>
+<span class="lineNum">     102 </span><span class="lineCov">         12 :                                 printf(&quot;%6d&quot;, characters);</span>
+<span class="lineNum">     103 </span><span class="lineCov">         12 :                         if(mode['w'])</span>
+<span class="lineNum">     104 </span><span class="lineCov">         12 :                                 printf(&quot;%6d&quot;, words);</span>
+<span class="lineNum">     105 </span><span class="lineCov">         12 :                         if(mode['l'])</span>
+<span class="lineNum">     106 </span><span class="lineCov">         12 :                                 printf(&quot;%6d&quot;, lines);</span>
+<span class="lineNum">     107 </span><span class="lineCov">         12 :                         if(mode['a'])</span>
+<span class="lineNum">     108 </span><span class="lineCov">         12 :                                 printf(&quot;%6d%6d%6d&quot;, blankLines, codeLines, commentLines);</span>
+<span class="lineNum">     109 </span><span class="lineCov">         12 :                         putchar('\n');</span>
+<span class="lineNum">     110 </span><span class="lineCov">         12 :                 }</span>
+<span class="lineNum">     111 </span>            : };
+<a name="112"><span class="lineNum">     112 </span>            : </a>
+<span class="lineNum">     113 </span>            : // 设置参数模式，假如是非法参数，返回0，否则返回1
+<span class="lineNum">     114 </span><span class="lineCov">          3 : bool setMode(char *s, map&lt;char, bool&gt; &amp;mode) {</span>
+<span class="lineNum">     115 </span><span class="lineCov">         15 :         for(int i = 1; i &lt; strlen(s); i++)  {</span>
+<span class="lineNum">     116 </span><span class="lineCov">         13 :                 char c = s[i];</span>
+<span class="lineNum">     117 </span><span class="lineCov">         13 :                 if(c == 'c' || c == 'w' || c == 'l' || c == 's' || c == 'a')</span>
+<span class="lineNum">     118 </span><span class="lineCov">         12 :                         mode[c] = true;</span>
+<span class="lineNum">     119 </span>            :                 else
+<span class="lineNum">     120 </span><span class="lineCov">          1 :                         return false;</span>
+<span class="lineNum">     121 </span>            :         }
+<span class="lineNum">     122 </span><span class="lineCov">          2 :         return true;</span>
+<span class="lineNum">     123 </span>            : }
+<a name="124"><span class="lineNum">     124 </span>            : </a>
+<span class="lineNum">     125 </span>            : // 统计某一文件
+<span class="lineNum">     126 </span><span class="lineCov">         12 : void readFile(char *s, map&lt;char, bool&gt; mode) {</span>
+<span class="lineNum">     127 </span><span class="lineCov">         12 :         File *file = new File(s);</span>
+<span class="lineNum">     128 </span><span class="lineCov">         12 :         file-&gt;count(mode);</span>
+<span class="lineNum">     129 </span><span class="lineCov">         12 :         file-&gt;print(mode);</span>
+<span class="lineNum">     130 </span><span class="lineCov">         12 : }</span>
+<a name="131"><span class="lineNum">     131 </span>            : </a>
+<span class="lineNum">     132 </span>            : // 递归统计某一目录下的所有文件
+<span class="lineNum">     133 </span><span class="lineCov">          9 : void recursiveReadFiles(DIR *dir, map&lt;char, bool&gt; mode) {</span>
+<span class="lineNum">     134 </span>            :         DIR *ndir;
+<span class="lineNum">     135 </span>            :         struct dirent *ent;
+<span class="lineNum">     136 </span><span class="lineCov">         17 :         while((ent = readdir(dir)) != NULL) {</span>
+<span class="lineNum">     137 </span><span class="lineCov">          8 :                 if(!strcmp(ent-&gt;d_name, &quot;..&quot;) || !strcmp(ent-&gt;d_name, &quot;.&quot;)) {</span>
+<span class="lineNum">     138 </span><span class="lineCov">          2 :                         continue;</span>
+<span class="lineNum">     139 </span>            :                 }
+<span class="lineNum">     140 </span><span class="lineCov">          6 :                 if((ndir = opendir(ent-&gt;d_name)) != NULL) {</span>
+<span class="lineNum">     141 </span><span class="lineNoCov">          0 :                         recursiveReadFiles(ndir, mode);</span>
+<span class="lineNum">     142 </span>            :                 }
+<span class="lineNum">     143 </span>            :                 else { 
+<span class="lineNum">     144 </span><span class="lineCov">          6 :                         readFile(ent-&gt;d_name, mode);</span>
+<span class="lineNum">     145 </span>            :                 }
+<span class="lineNum">     146 </span>            :         }
+<span class="lineNum">     147 </span><span class="lineCov">          1 :         closedir(dir);</span>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">          1 : }</span></a>
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span><span class="lineCov">          3 : int main(int argc, char **argv) {</span>
+<span class="lineNum">     151 </span><span class="lineCov">          6 :         map&lt;char, bool&gt; mode;</span>
+<span class="lineNum">     152 </span>            :         // 处理未输出参数的情况
+<span class="lineNum">     153 </span><span class="lineCov">          3 :         if(argc == 1) {</span>
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :                 printf(&quot;Please specify parameters!\n&quot;);</span>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :                 return -1;</span>
+<span class="lineNum">     156 </span>            :         }
+<span class="lineNum">     157 </span>            :         // 设置参数
+<span class="lineNum">     158 </span><span class="lineCov">         12 :         for(int i = 1; i &lt; argc; i++) {</span>
+<span class="lineNum">     159 </span><span class="lineCov">         10 :                 if(argv[i][0] == '-') {</span>
+<span class="lineNum">     160 </span><span class="lineCov">          3 :                         if(!setMode(argv[i], mode)) {</span>
+<span class="lineNum">     161 </span><span class="lineCov">          1 :                                 printf(&quot;Invalid option!\n&quot;);</span>
+<span class="lineNum">     162 </span><span class="lineCov">          1 :                                 return -1;</span>
+<span class="lineNum">     163 </span>            :                         }
+<span class="lineNum">     164 </span>            :                 }
+<span class="lineNum">     165 </span>            :         }
+<span class="lineNum">     166 </span>            :         /* 假如是文件，调用readFile函数
+<span class="lineNum">     167 </span>            :          * 假如是目录，调用recursiveReadFiles函数
+<span class="lineNum">     168 </span>            :          */
+<span class="lineNum">     169 </span><span class="lineCov">         11 :         for(int i = 1; i &lt; argc; i++) {</span>
+<span class="lineNum">     170 </span><span class="lineCov">          9 :                 if(argv[i][0] != '-') {</span>
+<span class="lineNum">     171 </span>            :                         DIR *dir;
+<span class="lineNum">     172 </span><span class="lineCov">          7 :                         if((dir = opendir(argv[i])) != NULL &amp;&amp; mode['s']) {</span>
+<span class="lineNum">     173 </span><span class="lineCov">          1 :                                 recursiveReadFiles(dir, mode);</span>
+<span class="lineNum">     174 </span>            :                         }
+<span class="lineNum">     175 </span><span class="lineCov">          6 :                         else if(dir) {</span>
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :                                 printf(&quot;Cannot access '%s': This is a directory!\n&quot;, argv[i]);</span>
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :                                 return -1;</span>
+<span class="lineNum">     178 </span>            :                         }
+<span class="lineNum">     179 </span><span class="lineCov">          6 :                         else if(fopen(argv[i], &quot;r&quot;) != NULL) {</span>
+<span class="lineNum">     180 </span><span class="lineCov">          6 :                                 readFile(argv[i], mode);</span>
+<span class="lineNum">     181 </span>            :                         }
+<span class="lineNum">     182 </span>            :                         else {
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :                                 printf(&quot;Cannot access '%s': No such file or directory!\n&quot;, argv[i]);</span>
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :                                 return -1;</span>
+<span class="lineNum">     185 </span>            :                         }
+<span class="lineNum">     186 </span>            :                 }
+<a name="187"><span class="lineNum">     187 </span>            :         }</a>
+<span class="lineNum">     188 </span><span class="lineCov">          2 :         return 0;</span>
+<span class="lineNum">     189 </span><span class="lineCov">          9 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
