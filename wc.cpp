@@ -17,7 +17,7 @@ class File {
 		int characters, words, lines, blankLines, codeLines, commentLines;
 
 	public:
-		// 构造函数，设置各初始值为0
+		// 构造函数
 		File(char *s) {
 			this->pFile = fopen(s, "r");
 			this->fileName = s;
@@ -55,7 +55,7 @@ class File {
 
 		/* 统计空白行、代码行、注释行
 		 * 要确定一行是不是空白行，只要通过判断该行的可打印字符个数是否不超过1个即可。另外还要注意，该行不能在块注释中。
-		 * 要确定一行是不是代码行，只要判断该行的可打印字符个数是否超过1个即可。另外还要注意，改行不在块注释中。
+		 * 要确定一行是不是代码行，只要判断该行的可打印字符个数是否超过1个即可。另外还要注意，该行不在块注释中。
 		 * 假如一行是注释行，那么该行首先必须不是代码行，其次，需要有注释标志。
 		 * 根据以上信息，可写出正则表达式进行匹配。
 		 */
@@ -65,6 +65,7 @@ class File {
 			bool blockCommentFlag = false;
 			string blankLineRegex = "(\\s*)([{};]?)(\\s*)";
 			string lineCommentRegex = "(\\s*)([{};]?)(\\s*)(//)(.*)";
+			string lineComment1Regex = "(\\s*)([{};]?)(\\s*)(/{1})(\\*{1})(.*)(\\*{1})(/{1})(\\s*)(\\n)";
 			string blockCommentStartFlagRegex = "(\\s*)([{};]?)(\\s*)(/{1})(\\*{1})(.*)";
 			string blockCommentStartFlag1Regex = "(.*)(/{1})(\\*{1})(.*)";
 			string blockCommentCloseFlagRegex = "(.*)(\\*{1})(/{1})(\\s*)";
@@ -78,7 +79,8 @@ class File {
 				else if(regex_match(line, regex(blankLineRegex))) {
 					blankLines++;
 				}
-				else if(regex_match(line, regex(lineCommentRegex))) {
+				else if(regex_match(line, regex(lineCommentRegex))
+						|| regex_match(line, regex(lineComment1Regex))) {
 					commentLines++;
 				}
 				else if(regex_match(line, regex(blockCommentStartFlagRegex))) {
@@ -110,16 +112,23 @@ class File {
 		}
 };
 
-// 设置参数模式，假如是非法参数，返回0，否则返回1
-bool setMode(char *s, map<char, bool> &mode) {
+// 检查参数是否合法
+bool checkModeExisted(char *s) {
 	for(int i = 1; i < strlen(s); i++)  {
 		char c = s[i];
 		if(c == 'c' || c == 'w' || c == 'l' || c == 's' || c == 'a')
-			mode[c] = true;
+			continue;
 		else
 			return false;
 	}
 	return true;
+}
+
+// 设置参数模式，假如是非法参数，返回0，否则返回1
+void setMode(char *s, map<char, bool> &mode) {
+	for(int i = 1; i < strlen(s); i++)  {
+		mode[s[i]] = true;
+	}
 }
 
 // 统计某一文件
@@ -149,7 +158,7 @@ void recursiveReadFiles(DIR *dir, map<char, bool> mode) {
 
 int main(int argc, char **argv) {
 	map<char, bool> mode;
-	// 处理未输出参数的情况
+	// 处理未输入参数的情况
 	if(argc == 1) {
 		printf("Please specify parameters!\n");
 		return -1;
@@ -157,7 +166,10 @@ int main(int argc, char **argv) {
 	// 设置参数
 	for(int i = 1; i < argc; i++) {
 		if(argv[i][0] == '-') {
-			if(!setMode(argv[i], mode)) {
+			if(checkModeExisted(argv[i])) {
+				setMode(argv[i], mode);
+			}
+			else {
 				printf("Invalid option!\n");
 				return -1;
 			}
